@@ -6,13 +6,14 @@ import time
 import typing as t
 from pathlib import Path
 from tempfile import TemporaryDirectory
+from urllib.error import URLError
 from uuid import uuid4
 
 import pytest
 from playwright.sync_api import sync_playwright
 
-from pycookiecheat import BrowserType, chrome_cookies, get_cookies
-from pycookiecheat.chrome import get_linux_config, get_macos_config
+from pycookiecheat import chrome_cookies
+from pycookiecheat.pycookiecheat import get_linux_config, get_osx_config
 
 BROWSER = os.environ.get("TEST_BROWSER_NAME", "Chromium")
 
@@ -51,19 +52,21 @@ def ci_setup() -> t.Generator:
             ignore_default_args=[
                 "--use-mock-keychain",
             ],
-            executable_path=ex_path,
+            executable_path=ex_path,  # type: ignore
         )
         page = browser.new_page()
         page.goto("https://n8henrie.com")
-        browser.add_cookies([
-            {
-                "name": "test_pycookiecheat",
-                "value": "It worked!",
-                "domain": "n8henrie.com",
-                "path": "/",
-                "expires": int(time.time()) + 300,
-            }
-        ])
+        browser.add_cookies(
+            [
+                {
+                    "name": "test_pycookiecheat",
+                    "value": "It worked!",
+                    "domain": "n8henrie.com",
+                    "path": "/",
+                    "expires": int(time.time()) + 300,
+                }
+            ]
+        )
         browser.close()
         cookie_file = Path(cookies_home) / "Default" / "Cookies"
         yield cookie_file
@@ -75,13 +78,23 @@ def test_raises_on_empty() -> None:
         chrome_cookies()  # type: ignore
 
 
+def test_raises_without_scheme() -> None:
+    """Ensure that `chrome_cookies("domain.com")` raises.
+
+    The domain must specify a scheme (http or https).
+
+    """
+    with pytest.raises(URLError):
+        chrome_cookies("n8henrie.com")
+
+
 def test_no_cookies(ci_setup: str) -> None:
     """Ensure that no cookies are returned for a fake url."""
     never_been_here = "http://{0}.com".format(uuid4())
     empty_dict = chrome_cookies(
         never_been_here,
         cookie_file=ci_setup,
-        browser=BrowserType(BROWSER),
+        browser=BROWSER,
     )
     assert empty_dict == dict()
 
@@ -92,33 +105,18 @@ def test_fake_cookie(ci_setup: str) -> None:
     For this to pass, you'll have to visit the url and put in "TestCookie" and
     "Just_a_test!" to set a temporary cookie with the appropriate values.
     """
-    cookies = t.cast(
-        dict,
-        chrome_cookies(
-            "https://n8henrie.com",
-            cookie_file=ci_setup,
-            browser=BrowserType(BROWSER),
-        ),
+    cookies = chrome_cookies(
+        "https://n8henrie.com",
+        cookie_file=ci_setup,
+        browser=BROWSER,
     )
     assert cookies.get("test_pycookiecheat") == "It worked!"
-
-    assert cookies == get_cookies(
-        "https://n8henrie.com",
-        browser=BrowserType(BROWSER),
-        cookie_file=ci_setup,
-    )
 
 
 def test_raises_on_wrong_browser() -> None:
     """Passing a browser other than Chrome or Chromium raises ValueError."""
     with pytest.raises(ValueError):
-        BrowserType("edge")
-
-    with pytest.raises(ValueError):
-        chrome_cookies(
-            "https://n8henrie.com",
-            browser="Safari",  # type: ignore
-        )
+        chrome_cookies("https://n8henrie.com", browser="Safari")
 
 
 def test_slack_config() -> None:
@@ -128,29 +126,12 @@ def test_slack_config() -> None:
     the Slack app feature is to read cookies from a different file. So opt to
     just test that new functionality with something simple and fairly robust.
     """
-    cfgs = []
     if sys.platform == "darwin":
-        cfgs.append(get_macos_config(BrowserType.SLACK))
-
-        parent = Path(
-            "~/Library/Application Support/BraveSoftware/Brave-Browser/Default"
-        )
-        parent.mkdir(parents=True)
-        (parent / "Cookies").touch()
-        cfgs.append(get_macos_config(BrowserType.SLACK))
-
-        assert cfgs[0] != cfgs[1]
+        cfg1 = get_osx_config("slack")
+        cfg2 = get_osx_config("SLACK")
     else:
-        cfgs.append(get_linux_config(BrowserType.SLACK))
+        cfg1 = get_linux_config("slack")
+        cfg2 = get_linux_config("SLACK")
 
-    for cfg in cfgs:
-        assert "Slack" in str(cfg["cookie_file"])
-
-
-def test_macos_bad_browser_variant() -> None:
-    """Tests the error message resulting from unrecognized BrowserType."""
-    for invalid in [BrowserType.FIREFOX, "foo"]:
-        with pytest.raises(
-            ValueError, match=f"{invalid} is not a valid BrowserType"
-        ):
-            get_macos_config(invalid)  # type: ignore
+    assert cfg1 == cfg2
+    assert "Slack" in cfg1["cookie_file"]

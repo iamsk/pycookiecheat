@@ -1,10 +1,9 @@
 # Credits
 
-## Core Contributors
+## Development Lead
 
 - [Nathan Henrie](http://n8henrie.com) <nate@n8henrie.com>
-- [jakob](https://github.com/grandchild) <grandchild@mailbox.org>
 
-## Other Contributors
+## Contributors
 
 - <https://github.com/n8henrie/pycookiecheat/graphs/contributors>

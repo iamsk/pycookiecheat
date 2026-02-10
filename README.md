@@ -6,15 +6,14 @@ status](https://github.com/n8henrie/pycookiecheat/actions/workflows/python-packa
 Borrow cookies from your browser's authenticated session for use in Python
 scripts.
 
-- Free software: MIT
-- [Documentation](https://n8henrie.com/2013/11/use-chromes-cookies-for-easier-downloading-with-python-requests/)
+-   Free software: MIT
+-   Documentation: http://n8h.me/HufI1w
 
 ## Installation
 
 **NB:** Use `pip` and `python` instead of `pip3` and `python3` if you're still
 on Python 2 and using pycookiecheat < v0.4.0. pycookiecheat >= v0.4.0 requires
-Python 3 and in general will aim to support python versions that are stable and
-not yet end-of-life: <https://devguide.python.org/versions>.
+Python 3.5+, and may soon go to 3.6+.
 
 - `python3 -m pip install pycookiecheat`
 
@@ -42,65 +41,28 @@ Alternatively, some users have suggested running Chrome with the
 
 ## Usage
 
-### As a Command-Line Tool
-
-After installation, the CLI tool can be run as a python module `python -m` or
-with a standalone console script:
-
-```console
-$ python -m pycookiecheat --help
-usage: pycookiecheat [-h] [-b BROWSER] [-o OUTPUT_FILE] [-v] [-c COOKIE_FILE]
-                     [-V]
-                     url
-
-Copy cookies from Chrome or Firefox and output as json
-
-positional arguments:
-  url
-
-options:
-  -h, --help            show this help message and exit
-  -b BROWSER, --browser BROWSER
-  -o OUTPUT_FILE, --output-file OUTPUT_FILE
-                        Output to this file in netscape cookie file format
-  -v, --verbose         Increase logging verbosity (may repeat), default is
-                        `logging.ERROR`
-  -c COOKIE_FILE, --cookie-file COOKIE_FILE
-                        Cookie file
-  -V, --version         show program's version number and exit
-
-```
-
-By default it prints the cookies to stdout as JSON but can also output a file in
-Netscape Cookie File Format.
-
-### As a Python Library
-
 ```python
-from pycookiecheat import BrowserType, get_cookies
+from pycookiecheat import chrome_cookies
 import requests
 
-url = 'https://n8henrie.com'
+url = 'http://example.com/fake.html'
 
 # Uses Chrome's default cookies filepath by default
-cookies = get_cookies(url)
+cookies = chrome_cookies(url)
 r = requests.get(url, cookies=cookies)
-
-# Using an alternate browser
-cookies = get_cookies(url, browser=BrowserType.CHROMIUM)
 ```
 
-Use the `cookie_file` keyword-argument to specify a different path to the file
-containing your cookies:
-`get_cookies(url, cookie_file='/abspath/to/cookies')`
+Use the `cookie_file` keyword-argument to specify a different filepath for the
+cookies-file: `chrome_cookies(url, cookie_file='/abspath/to/cookies')`
 
-You may be able to retrieve cookies for alternative Chromium-based browsers by
-manually specifying something like
-`"/home/username/.config/BrowserName/Default/Cookies"` as your `cookie_file`.
+Keep in mind that pycookiecheat defaults to looking for cookies for
+Chromium, not Google Chrome, so if you're using the latter, you'll need to
+manually specify something like
+`"/home/username/.config/google-chrome/Default/Cookies"` as your `cookie_file`.
 
 ## Features
 
-- Returns decrypted cookies from Google Chrome, Brave, or Slack, on MacOS or
+- Returns decrypted cookies from Google Chrome, Brave, or Slack, on OSX or
   Linux.
 - Optionally outputs cookies to file (thanks to Muntashir Al-Islam!)
 
@@ -132,9 +94,9 @@ libffi-dev python-dev` prior to installing with `pip`.
 
 On KDE, Chrome defaults to using KDE's own keyring, KWallet. For pycookiecheat to support KWallet the [`dbus-python`](https://pypi.org/project/dbus-python/) package must be installed.
 
-### How do I install the (unreleased) master branch with pip?
+### How do I install the dev branch with pip?
 
-- `python -m pip install git+https://github.com/n8henrie/pycookiecheat@master`
+- `python -m pip install git+https://github.com/n8henrie/pycookiecheat@dev`
 
 ## Buy Me a Coffee
 
