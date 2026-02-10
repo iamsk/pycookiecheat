@@ -1,5 +1,56 @@
 # [Changelog](https://keepachangelog.com)
 
+## v0.8.0 :: 20241102
+
+### Breaking Changes
+
+- `url` is now a positional argument (no longer requires `-u`)
+- Browser type must be passed as a variant of the `BrowserType` enum; string
+  is no longer supported
+- Now requires python >= 3.9
+
+### CLI Enhancements
+
+- Assume `https://` if the scheme is not specified
+- Add `--version` flag (thanks @samiam)
+- Add `-c` flag to specify custom path to cookie file (thanks @samiam)
+- Convert the `browser` argument into a `BrowserType` at parse time
+
+### Fixes / Other
+
+- Fix new path to Firefox profile on MacOS (thanks @MattMuffin)
+- Support Chrome's new v24 cookies (thanks @chrisgavin)
+- Add new top-level `get_cookies` function that can be used for all supported
+  browsers
+  - No longer need to use separate `chrome_cookies` or `firefox_cookies`
+    functions, but will leave these around for backwards compatibility
+- Use `ruff` instead of hodgepodge of `flake8` / `pycodestyle` / `black` and
+  others
+
+## v0.7.0 :: 20240105
+
+- Now requires python >= 3.8
+    - 3.7 is now EoL: https://devguide.python.org/versions/
+    - pycookiecheat seems to build and run on 3.7, but several test
+      dependencies require versions that are either incompatible with 3.12 or
+      3.7
+- Add `BrowserType` enum
+    - Instead of passing a string (e.g. "chrome"), please import and use a
+      `BrowserType` (e.g. `BrowserType.CHROME`)
+    - Add deprecation warning for passing strings
+- Added a nix flake to facilitate testing multiple python versions
+- Add basic logging
+- Add CLI tool
+- Add `as_cookies` parameter to allow returning `list[Cookie]` instead of
+  `dict` (without breaking backward compatibility)
+- Loosen dependency constrains, which should make usage as a library easier
+
+## v0.6.0 :: 20230324
+
+- Add firefox support, thanks to @grandchild
+    - Also would like to welcome @grandchild as a new member of the
+      pycookiecheat team!
+
 ## v0.5.0 :: 20230324
 
 - Add support for Brave thanks to @chrisgavin!
