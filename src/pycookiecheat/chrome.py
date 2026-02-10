@@ -114,6 +114,7 @@ def get_macos_config(browser: BrowserType) -> dict:
             BrowserType.CHROMIUM: "Chromium/Default/Cookies",
             BrowserType.BRAVE: "BraveSoftware/Brave-Browser/Default/Cookies",
             BrowserType.SLACK: "Slack/Cookies",
+            BrowserType.DIA: "Dia/User Data/Default/Cookies",
         }[browser]
     except KeyError as e:
         errmsg = (
